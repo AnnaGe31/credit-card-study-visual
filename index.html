@@ -1,79 +1,264 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Credit Card Payment Demo</title>
+<meta charset="utf-8" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Credit Card Payment Demo</title>
 
-  <!-- External CSS -->
-  <link rel="stylesheet" href="styles.css" />
+<!-- External CSS -->
+<link rel="stylesheet" href="styles.css">
 
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
-
 <body>
-  <div class="wrap">
-    <header>
-      <h1>Credit Card Payment Calculator</h1>
-      <p class="sub">
-        Click a payment option to view the total payoff time and total payment amount.
+<div class="wrap">
+  <header>
+    <h1>Credit Card Payment Calculator</h1>
+    <p class="sub">
+      Click a payment option to view the total payoff time and total payment amount. Afterwards, please make your payment choice below this calculator.
+    </p>
+  </header>
+
+  <main class="card" role="region" aria-label="Calculator">
+    <!-- Payment Options -->
+    <section aria-labelledby="options-title">
+      <h2 id="options-title" style="margin:0 0 8px; font-size:1.1rem;">
+        Choose Your Monthly Payment Amount
+      </h2>
+
+      <div class="options">
+        <label>
+          <input type="radio" name="payOption" value="1836.90">
+          Statement Balance (as of 02/01/2026): $1836.90
+        </label>
+        <label>
+          <input type="radio" name="payOption" value="1875.11">
+          Current Balance: $1875.11
+        </label>
+        <label>
+          <input type="radio" name="payOption" value="38.00">
+          Minimum Payment Due: $38.00
+        </label>
+
+        <!-- Other Amount -->
+        <label>
+          <input type="radio" name="payOption" value="other">
+          Other Amount (Must be greater than $38):
+          <input id="paymentInput" type="number" min="38" max="1875.11" step="0.01" placeholder="Enter amount" />
+        </label>
+      </div>
+
+      <!-- Slider box -->
+      <div class="slider-box" id="sliderBox">
+        <p>
+          If you pay <strong>$<span id="descPayment">-</span></strong> each month and make no new charges,
+          you will pay off your current balance in <strong><span id="descYears">—</span></strong>,
+          for a total payment of <strong>$<span id="descTotal">—</span></strong>.
+        </p>
+        <input id="paymentRange" type="range" min="38" max="1875.11" step="0.01" value="38" />
+      </div>
+
+    </section>
+
+    <!-- Results -->
+    <section aria-labelledby="results-title">
+      <h2 id="results-title" style="margin:16px 0 8px; font-size:1.1rem;">
+        Estimated Payoff Summary
+      </h2>
+      <div class="results" role="status" aria-live="polite">
+        <div class="stat">
+          <div class="k">Estimated Time to Pay Off</div>
+          <div class="v" id="yearsOut">—</div>
+        </div>
+        <div class="stat">
+          <div class="k">Total Amount Paid (Principal + Interest)</div>
+          <div class="v" id="totalOut">—</div>
+        </div>
+      </div>
+      <p style="font-size:0.9rem; color:#6b7280; margin-top:6px;">
+        *Calculations assume a 21% annual interest rate and no additional charges.
       </p>
-    </header>
 
-    <main class="card" role="region" aria-label="Calculator">
-
-      <section>
-        <h2>Choose Your Monthly Payment Amount</h2>
-
-        <div class="options">
-          <label><input type="radio" name="payOption" value="statement" /> Statement Balance</label>
-          <label><input type="radio" name="payOption" value="current" /> Current Balance</label>
-          <label><input type="radio" name="payOption" value="minimum" /> Minimum Payment</label>
-          <label>
-            <input type="radio" name="payOption" value="other" />
-            Other Amount:
-            <input id="paymentInput" type="number" min="38" step="0.01" />
-          </label>
-        </div>
-
-        <div class="slider-box">
-          <p>
-            If you pay <strong>$<span id="descPayment">—</span></strong> each month,
-            you will pay off your balance in <strong><span id="descYears">—</span></strong>,
-            totaling <strong>$<span id="descTotal">—</span></strong>.
-          </p>
-          <input id="paymentRange" type="range" />
-        </div>
-      </section>
-
-      <section>
-        <h2>Estimated Payoff Summary</h2>
-
-        <div class="results">
-          <div class="stat">
-            <div class="k">Estimated Time to Pay Off</div>
-            <div class="v" id="yearsOut">—</div>
+      <!-- Graph Visualizations -->
+      <div class="graph-section" style="margin-top:20px;">
+        <h3 style="margin-bottom:8px; font-size:1rem;">Visual Breakdown</h3>
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:300px;">
+            <canvas id="balanceChart" height="200"></canvas>
           </div>
-          <div class="stat">
-            <div class="k">Total Amount Paid</div>
-            <div class="v" id="totalOut">—</div>
+          <div style="flex:1; min-width:300px;">
+            <canvas id="stackedChart" height="200"></canvas>
           </div>
         </div>
+      </div>
+    </section>
+  </main>
 
-        <div class="graph-section">
-          <canvas id="balanceChart"></canvas>
-          <canvas id="stackedChart"></canvas>
-        </div>
-      </section>
-    </main>
+  <footer>Demo Website for Research Use Only</footer>
+</div>
 
-    <footer>Demo Website for Research Use Only</footer>
-  </div>
+<script>
+  let isTyping = false;
+  
+  // --- Constants (Oct 2025 update) ---
+  const STATEMENT_BALANCE = 1836.90;
+  const CURRENT_BALANCE   = 1875.11;
+  const MIN_PAYMENT       = 38.00;
+  const ANNUAL_RATE       = 0.21;
+  const MONTHLY_RATE      = ANNUAL_RATE / 12;
 
-  <!-- Config + Logic -->
-  <script src="config.js"></script>
-  <script src="script.js"></script>
+  const paymentRange = document.getElementById('paymentRange');
+  const paymentInput = document.getElementById('paymentInput');
+  const yearsOut     = document.getElementById('yearsOut');
+  const totalOut     = document.getElementById('totalOut');
+  const sliderBox    = document.getElementById('sliderBox');
+  const descPayment  = document.getElementById('descPayment');
+  const descYears    = document.getElementById('descYears');
+  const descTotal    = document.getElementById('descTotal');
 
+  function compute(payment){
+    const balance = CURRENT_BALANCE;
+    const monthlyPayment = Math.max(0, Number(payment) || 0);
+    if (monthlyPayment <= balance * MONTHLY_RATE) return { pay: monthlyPayment, years: Infinity, total: Infinity };
+    if (monthlyPayment >= balance) return { pay: monthlyPayment, years: 0, total: balance };
+    const months = Math.log(monthlyPayment / (monthlyPayment - MONTHLY_RATE * balance)) / Math.log(1 + MONTHLY_RATE);
+    const years = months / 12;
+    const total = monthlyPayment * months;
+    return { pay: monthlyPayment, years, total };
+  }
+
+  function updateDisplay(pay, total) {
+    const formattedPay = pay.toFixed(2);
+    const formattedTotal = total.toFixed(2);
+
+    totalOut.textContent    = `$${formattedTotal}`;
+    descPayment.textContent = formattedPay;
+    descTotal.textContent   = formattedTotal;
+    paymentRange.value      = Math.min(pay, CURRENT_BALANCE).toFixed(2);
+
+    if (!isTyping) paymentInput.value = formattedPay;
+  }
+
+  function render(payment) {
+    if (!payment || isNaN(payment) || payment <= 0) return;
+
+    const { pay, years, total } = compute(payment);
+    updateDisplay(pay, total);
+
+    if (!isFinite(years)) {
+      yearsOut.textContent = "—";
+      descYears.textContent = "—";
+      return;
+    }
+
+    const totalMonths = Math.ceil(years * 12);
+    let timeText = "";
+
+    if (totalMonths <= 0) {
+      timeText = "0 months";
+    } else if (totalMonths < 12) {
+      timeText = totalMonths === 1 ? "1 month" : `${totalMonths} months`;
+    } else {
+      const wholeYears = Math.floor(totalMonths / 12);
+      const remainingMonths = totalMonths % 12;
+      if (remainingMonths === 0) {
+        timeText = wholeYears === 1 ? "1 year" : `${wholeYears} years`;
+      } else {
+        timeText = `${wholeYears} years and ${remainingMonths} months`;
+      }
+    }
+
+    yearsOut.textContent = timeText;
+    descYears.textContent = totalMonths <= 1 ? timeText : `about ${timeText}`;
+
+    updateCharts(payment);
+  }
+
+  paymentRange.addEventListener('input', e => {
+    let val = +e.target.value;
+    if (Math.abs(val - CURRENT_BALANCE) < 0.1) val = CURRENT_BALANCE;
+    render(val);
+  });
+
+  paymentInput.addEventListener('focus', () => { isTyping = true; });
+
+  paymentInput.addEventListener('input', e => {
+    const val = parseFloat(e.target.value);
+    if (!isNaN(val)) render(val);
+  });
+
+  paymentInput.addEventListener('blur', e => {
+    isTyping = false;
+    const val = parseFloat(e.target.value);
+    if (!isNaN(val)) {
+      e.target.value = val.toFixed(2);
+      render(val);
+    }
+  });
+
+  document.querySelectorAll('input[name="payOption"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      if (radio.value === 'other') {
+        const val = +paymentInput.value;
+        if (!val) return;
+        paymentRange.value = val;
+        render(val);
+      } else {
+        paymentRange.value = radio.value;
+        render(+radio.value);
+      }
+    });
+  });
+
+  window.addEventListener('DOMContentLoaded', () => {});
+  
+  let balanceChart, stackedChart;
+
+  function updateCharts(payment) {
+    const { pay, years } = compute(payment);
+    if (!isFinite(years)) return;
+
+    const months = Math.ceil(years * 12);
+    const labels = Array.from({ length: months }, (_, i) => i + 1);
+
+    let balance = CURRENT_BALANCE;
+    const balances = [];
+    const principalParts = [];
+    const interestParts = [];
+
+    for (let m = 1; m <= months; m++) {
+      const interest = balance * MONTHLY_RATE;
+      const principal = Math.min(pay - interest, balance);
+      balance -= principal;
+      balances.push(balance);
+      principalParts.push(principal);
+      interestParts.push(interest);
+    }
+
+    const balCtx = document.getElementById("balanceChart").getContext("2d");
+    const stkCtx = document.getElementById("stackedChart").getContext("2d");
+
+    if (balanceChart) balanceChart.destroy();
+    if (stackedChart) stackedChart.destroy();
+
+    balanceChart = new Chart(balCtx, {
+      type: "line",
+      data: { labels, datasets: [{ data: balances, borderColor: "#8A100B", borderWidth: 2 }] },
+      options: { plugins: { legend: { display: false } } }
+    });
+
+    stackedChart = new Chart(stkCtx, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [
+          { label: "Interest", data: interestParts, backgroundColor: "#EAAA00" },
+          { label: "Principal", data: principalParts, backgroundColor: "#8A100B" }
+        ]
+      },
+      options: { scales: { x: { stacked: true }, y: { stacked: true } } }
+    });
+  }
+</script>
 </body>
 </html>
