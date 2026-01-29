@@ -137,3 +137,17 @@ footer{
   height: 300px;      /* makes it flatter */
 }
 
+.chart-wrap {
+  display: flex;
+  justify-content: center; /* centers the chart */
+}
+
+.chart-box {
+  width: 66%;
+  height: 220px;           /* flatter */
+}
+
+.chart-box canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
