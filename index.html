@@ -36,19 +36,16 @@
           Current Balance: $1875.11
         </label>
         <label>
+          <input type="radio" name="payOption" value="38.00">
+          Minimum Payment Due: $38.00
+        </label>
+        <label>
           <input type="radio" name="payOption" value="other">
           Other Amount (Must be greater than $38):
           <input id="paymentInput" type="number" min="38" max="1875.11" step="0.01" placeholder="Enter amount" />
           <div id="errorMessage" style="color: #dc2626; font-size: 0.85rem; margin-top: 4px; display: none; font-weight: normal;">
             ⚠️ Payment must be at least $38.00 (the minimum payment due)
           </div>
-        </label>
-
-        <!-- Other Amount -->
-        <label>
-          <input type="radio" name="payOption" value="other">
-          Other Amount (Must be greater than $38):
-          <input id="paymentInput" type="number" min="38" max="1875.11" step="0.01" placeholder="Enter amount" />
         </label>
       </div>
 
