@@ -80,14 +80,14 @@
       </p>
 
       <!-- Graphs -->
-      <div class="graph-section" style="margin-top:20px;">
+      <div class="graph-section">
         <h3 style="margin-bottom:8px; font-size:1rem;">Visual Breakdown</h3>
-        <div style="display:flex; gap:20px; flex-wrap:wrap;">
-          <!-- <div style="flex:1; min-width:300px;">
-            <canvas id="balanceChart" height="200"></canvas>
-          </div> -->
-          <div class="chart-small">
-            <canvas id="stackedChart"></canvas>
+        <div class="chart-wrap">
+          <div class="chart-box">
+            <!-- <div style="flex:1; min-width:300px;">
+              <canvas id="balanceChart" height="200"></canvas>
+            </div> -->
+              <canvas id="stackedChart"></canvas>
           </div>
         </div>
       </div>
@@ -257,6 +257,7 @@
         ]
       },
       options: {
+        responsive: true,
         maintainAspectRatio: false,
         scales: {
           x: { stacked: true },
