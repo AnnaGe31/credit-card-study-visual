@@ -130,3 +130,7 @@ footer{
 .graph-section > div {
   width: 100%;
 }
+
+.chart-small {
+  height: 200px;
+}
