@@ -183,9 +183,15 @@
   paymentInput.addEventListener('focus', () => { isTyping = true; });
 
   paymentInput.addEventListener('input', e => {
-    const val = parseFloat(e.target.value);
-    if (!isNaN(val)) render(val);
-  });
+  // Auto-select "Other Amount" radio when user types
+  const otherRadio = document.querySelector('input[name="payOption"][value="other"]');
+  if (otherRadio && !otherRadio.checked) {
+    otherRadio.checked = true;
+  }
+  
+  const val = parseFloat(e.target.value);
+  if (!isNaN(val)) render(val);
+});
 
   paymentInput.addEventListener('blur', e => {
     isTyping = false;
