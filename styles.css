@@ -126,3 +126,7 @@ footer{
   border:1px solid #ddd; 
   border-radius:8px; 
 }
+
+.graph-section > div {
+  width: 100%;
+}
