@@ -79,13 +79,13 @@
         *Calculations assume a 21% annual interest rate and no additional charges.
       </p>
 
-      <!-- Graph Visualizations -->
+      <!-- Graphs -->
       <div class="graph-section" style="margin-top:20px;">
         <h3 style="margin-bottom:8px; font-size:1rem;">Visual Breakdown</h3>
         <div style="display:flex; gap:20px; flex-wrap:wrap;">
-          <div style="flex:1; min-width:300px;">
+          <!-- <div style="flex:1; min-width:300px;">
             <canvas id="balanceChart" height="200"></canvas>
-          </div>
+          </div> -->
           <div style="flex:1; min-width:300px;">
             <canvas id="stackedChart" height="200"></canvas>
           </div>
@@ -235,17 +235,17 @@
       interestParts.push(interest);
     }
 
-    const balCtx = document.getElementById("balanceChart").getContext("2d");
+    // const balCtx = document.getElementById("balanceChart").getContext("2d");
     const stkCtx = document.getElementById("stackedChart").getContext("2d");
 
-    if (balanceChart) balanceChart.destroy();
+    // if (balanceChart) balanceChart.destroy();
     if (stackedChart) stackedChart.destroy();
 
-    balanceChart = new Chart(balCtx, {
-      type: "line",
-      data: { labels, datasets: [{ data: balances, borderColor: "#8A100B", borderWidth: 2 }] },
-      options: { plugins: { legend: { display: false } } }
-    });
+    // balanceChart = new Chart(balCtx, {
+    //   type: "line",
+    //   data: { labels, datasets: [{ data: balances, borderColor: "#8A100B", borderWidth: 2 }] },
+    //   options: { plugins: { legend: { display: false } } }
+    // });
 
     stackedChart = new Chart(stkCtx, {
       type: "bar",
