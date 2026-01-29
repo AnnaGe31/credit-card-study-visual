@@ -50,6 +50,9 @@
       </div>
 
       <!-- Slider box -->
+      <h2 id="options-title" style="margin:0 0 8px; font-size:1.1rem;">
+        Use the Slider to Find Out Details of Your Payment ⬇️
+      </h2>
       <div class="slider-box" id="sliderBox">
         <p>
           If you pay <strong>$<span id="descPayment">-</span></strong> each month and make no new charges,
@@ -232,7 +235,24 @@
     if (!isFinite(years)) return;
 
     const months = Math.ceil(years * 12);
-    const labels = Array.from({ length: months }, (_, i) => i + 1);
+    
+    // Create labels with years and final month if needed
+    const labels = Array.from({ length: months }, (_, i) => {
+      const monthNum = i + 1;
+      const year = Math.floor(i / 12) + 1;
+      const monthInYear = (i % 12) + 1;
+      
+      // Show year labels at the start of each year
+      if (monthInYear === 1) {
+        return `Year ${year}`;
+      }
+      // Show the final month if it's not at the start of a year
+      else if (monthNum === months && monthInYear !== 1) {
+        return `Month ${monthNum}`;
+      }
+      // Otherwise, empty label
+      return '';
+    });
 
     let balance = CURRENT_BALANCE;
     const balances = [];
@@ -248,17 +268,9 @@
       interestParts.push(interest);
     }
 
-    // const balCtx = document.getElementById("balanceChart").getContext("2d");
     const stkCtx = document.getElementById("stackedChart").getContext("2d");
 
-    // if (balanceChart) balanceChart.destroy();
     if (stackedChart) stackedChart.destroy();
-
-    // balanceChart = new Chart(balCtx, {
-    //   type: "line",
-    //   data: { labels, datasets: [{ data: balances, borderColor: "#8A100B", borderWidth: 2 }] },
-    //   options: { plugins: { legend: { display: false } } }
-    // });
 
     stackedChart = new Chart(stkCtx, {
       type: "bar",
@@ -273,12 +285,18 @@
         responsive: true,
         maintainAspectRatio: false,
         scales: {
-          x: { stacked: true },
+          x: { 
+            stacked: true,
+            ticks: {
+              autoSkip: false
+            }
+          },
           y: { stacked: true }
-        }
+        },
+        barPercentage: 0.95,
+        categoryPercentage: 0.95
       }
-});
-
+    });
   }
 </script>
 </body>
