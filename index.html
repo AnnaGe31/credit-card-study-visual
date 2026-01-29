@@ -246,9 +246,11 @@
       if (monthInYear === 1) {
         return `Year ${year}`;
       }
-      // Show the final month if it's not at the start of a year
+      // Show the final month if it's not at the start of a year AND it's the last month
       else if (monthNum === months && monthInYear !== 1) {
-        return `Month ${monthNum}`;
+        const finalYear = Math.floor((months - 1) / 12) + 1;
+        const finalMonth = monthInYear;
+        return `Year ${finalYear}\nMonth ${finalMonth}`;
       }
       // Otherwise, empty label
       return '';
