@@ -36,8 +36,12 @@
           Current Balance: $1875.11
         </label>
         <label>
-          <input type="radio" name="payOption" value="38.00">
-          Minimum Payment Due: $38.00
+          <input type="radio" name="payOption" value="other">
+          Other Amount (Must be greater than $38):
+          <input id="paymentInput" type="number" min="38" max="1875.11" step="0.01" placeholder="Enter amount" />
+          <div id="errorMessage" style="color: #dc2626; font-size: 0.85rem; margin-top: 4px; display: none; font-weight: normal;">
+            ⚠️ Payment must be at least $38.00 (the minimum payment due)
+          </div>
         </label>
 
         <!-- Other Amount -->
@@ -130,13 +134,17 @@
   function updateDisplay(pay, total) {
     const formattedPay = pay.toFixed(2);
     const formattedTotal = total.toFixed(2);
-
+  
     totalOut.textContent    = `$${formattedTotal}`;
     descPayment.textContent = formattedPay;
     descTotal.textContent   = formattedTotal;
     paymentRange.value      = Math.min(pay, CURRENT_BALANCE).toFixed(2);
-
-    if (!isTyping) paymentInput.value = formattedPay;
+  
+    // Only update text box if "Other Amount" is selected and user isn't typing
+    const otherRadio = document.querySelector('input[name="payOption"][value="other"]');
+    if (!isTyping && otherRadio && otherRadio.checked) {
+      paymentInput.value = formattedPay;
+    }
   }
 
   function render(payment) {
@@ -183,23 +191,25 @@
   paymentInput.addEventListener('focus', () => { isTyping = true; });
 
   paymentInput.addEventListener('input', e => {
-  // Auto-select "Other Amount" radio when user types
-  const otherRadio = document.querySelector('input[name="payOption"][value="other"]');
-  if (otherRadio && !otherRadio.checked) {
-    otherRadio.checked = true;
-  }
-  
-  const val = parseFloat(e.target.value);
-  if (!isNaN(val)) render(val);
-});
-
-  paymentInput.addEventListener('blur', e => {
-    isTyping = false;
-    const val = parseFloat(e.target.value);
-    if (!isNaN(val)) {
-      e.target.value = val.toFixed(2);
-      render(val);
+    // Auto-select "Other Amount" radio when user types
+    const otherRadio = document.querySelector('input[name="payOption"][value="other"]');
+    if (otherRadio && !otherRadio.checked) {
+      otherRadio.checked = true;
     }
+    
+    const val = parseFloat(e.target.value);
+    const errorMessage = document.getElementById('errorMessage');
+    
+    // Check if value is less than minimum
+    if (!isNaN(val) && val < MIN_PAYMENT) {
+      errorMessage.style.display = 'block';
+      // Don't render calculations for invalid amounts
+      return;
+    } else {
+      errorMessage.style.display = 'none';
+    }
+    
+    if (!isNaN(val)) render(val);
   });
 
   document.querySelectorAll('input[name="payOption"]').forEach(radio => {
