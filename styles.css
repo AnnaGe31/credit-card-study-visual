@@ -1,0 +1,81 @@
+:root {
+  --maroon:#8A100B;
+  --gold:#EAAA00;
+  --muted:#6b7280;
+  --ring:#e5e7eb;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+  padding: 20px;
+  background: #fff;
+  color: #111;
+}
+
+.wrap {
+  max-width: 900px;
+  margin: auto;
+}
+
+header {
+  margin-bottom: 20px;
+}
+
+h1 {
+  color: var(--maroon);
+}
+
+.sub {
+  color: var(--muted);
+}
+
+.card {
+  padding: 20px;
+  border: 1px solid var(--ring);
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.05);
+}
+
+.options label {
+  display: block;
+  margin: 8px 0;
+  font-weight: 600;
+}
+
+input[type="number"] {
+  width: 120px;
+  margin-left: 6px;
+}
+
+.slider-box {
+  margin-top: 10px;
+  padding: 10px;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+.results {
+  display: flex;
+  gap: 20px;
+}
+
+.stat {
+  flex: 1;
+  background: #fafafa;
+  padding: 12px;
+  border-radius: 10px;
+}
+
+.stat .k {
+  color: var(--muted);
+}
+
+.stat .v {
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+
+.graph-section {
+  margin-top: 20px;
+}
