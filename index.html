@@ -256,8 +256,15 @@
           { label: "Principal", data: principalParts, backgroundColor: "#8A100B" }
         ]
       },
-      options: { scales: { x: { stacked: true }, y: { stacked: true } } }
-    });
+      options: {
+        maintainAspectRatio: false,
+        scales: {
+          x: { stacked: true },
+          y: { stacked: true }
+        }
+      }
+});
+
   }
 </script>
 </body>
