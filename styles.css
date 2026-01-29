@@ -131,20 +131,14 @@ footer{
   width: 100%;
 }
 
-.chart-small {
-  width: 66%;
-  max-width: 600px;   /* optional but recommended */
-  height: 300px;      /* makes it flatter */
-}
-
 .chart-wrap {
   display: flex;
-  justify-content: center; /* centers the chart */
+  justify-content: center;
 }
 
 .chart-box {
   width: 66%;
-  height: 220px;           /* flatter */
+  height: 220px;
 }
 
 .chart-box canvas {
