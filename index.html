@@ -286,13 +286,31 @@
         responsive: true,
         maintainAspectRatio: false,
         scales: {
-          x: { 
+          x: {
             stacked: true,
+            title: {
+              display: true,
+              text: 'Time to Pay Off',
+              font: {
+                size: 13,
+                weight: '500'
+              }
+            },
             ticks: {
               autoSkip: false
             }
           },
-          y: { stacked: true }
+          y: {
+            stacked: true,
+            title: {
+              display: true,
+              text: 'Monthly Payment Breakdown ($)',
+              font: {
+                size: 13,
+                weight: '500'
+              }
+            }
+          }
         },
         barPercentage: 0.995,
         categoryPercentage: 0.995
