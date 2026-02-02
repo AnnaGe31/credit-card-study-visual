@@ -85,7 +85,7 @@
 
       <!-- Graphs -->
       <div class="graph-section">
-        <h3 style="margin-bottom:8px; font-size:1rem;">Payment Breakdown per Month</h3>
+        <h3 style="margin-bottom:8px; font-size:1rem;">Cumulative Total Payment Over Time</h3>
         <div class="chart-wrap">
           <div class="chart-box">
             <!-- <div style="flex:1; min-width:300px;">
@@ -176,7 +176,7 @@
       }
     }
 
-    yearsOut.textContent = timeText;
+    yearsOut.textContent = totalMonths <= 12 ? timeText : `${timeText} (${totalMonths} months)`;
     descYears.textContent = totalMonths <= 1 ? timeText : `about ${timeText}`;
 
     updateCharts(payment);
@@ -236,37 +236,33 @@
 
     const months = Math.ceil(years * 12);
     
-    // Create labels with years and final month if needed
+    // Create labels showing all months
     const labels = Array.from({ length: months }, (_, i) => {
       const monthNum = i + 1;
-      const year = Math.floor(i / 12) + 1;
-      const monthInYear = (i % 12) + 1;
-      
-      // Show year labels at the start of each year
-      if (monthInYear === 1) {
-        return `Year ${year}`;
-      }
-      // Show the final month if it's not at the start of a year AND it's the last month
-      else if (monthNum === months && monthInYear !== 1) {
-        const finalMonth = monthInYear;
-        return `Month ${finalMonth}`;
-      }
-      // Otherwise, empty label
-      return '';
+      return `${monthNum}`;
     });
 
     let balance = CURRENT_BALANCE;
-    const balances = [];
-    const principalParts = [];
-    const interestParts = [];
+    const cumulativeTotalPayments = [];
+    const cumulativeInterest = [];
+    const cumulativePrincipal = [];
+    let totalPaidSoFar = 0;
+    let totalInterestSoFar = 0;
+    let totalPrincipalSoFar = 0;
 
     for (let m = 1; m <= months; m++) {
       const interest = balance * MONTHLY_RATE;
       const principal = Math.min(pay - interest, balance);
       balance -= principal;
-      balances.push(balance);
-      principalParts.push(principal);
-      interestParts.push(interest);
+      
+      // Accumulate totals
+      totalInterestSoFar += interest;
+      totalPrincipalSoFar += principal;
+      totalPaidSoFar += (principal + interest);
+      
+      cumulativeInterest.push(totalInterestSoFar);
+      cumulativePrincipal.push(totalPrincipalSoFar);
+      cumulativeTotalPayments.push(totalPaidSoFar);
     }
 
     const stkCtx = document.getElementById("stackedChart").getContext("2d");
@@ -278,8 +274,8 @@
       data: {
         labels,
         datasets: [
-          { label: "Interest", data: interestParts, backgroundColor: "#EAAA00" },
-          { label: "Principal", data: principalParts, backgroundColor: "#8A100B" }
+          { label: "Cumulative Interest", data: cumulativeInterest, backgroundColor: "#EAAA00" },
+          { label: "Cumulative Principal", data: cumulativePrincipal, backgroundColor: "#8A100B" }
         ]
       },
       options: {
@@ -290,27 +286,30 @@
             stacked: true,
             title: {
               display: true,
-              text: 'Time to Pay Off',
+              text: 'Month',
               font: {
                 size: 13,
                 weight: '500'
               }
             },
             ticks: {
-              autoSkip: false
+              autoSkip: true,
+              maxTicksLimit: 20
             }
           },
           y: {
             stacked: true,
             title: {
               display: true,
-              text: [
-                'Monthly Payment',
-                'Breakdown ($)'
-              ],
+              text: 'Total Payment ($)',
               font: {
                 size: 13,
                 weight: '500'
+              }
+            },
+            ticks: {
+              callback: function(value) {
+                return '$' + value.toFixed(0);
               }
             }
           }
