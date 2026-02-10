@@ -13,7 +13,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Credit Card Payment Calculator</h1>
+    <h1>Credit Card Payment Decision</h1>
     <p class="sub">
       Click a payment option to view the total payoff time and total payment amount. Afterwards, please make your payment choice below this calculator.
     </p>
@@ -23,7 +23,7 @@
     <!-- Payment Options -->
     <section aria-labelledby="options-title">
       <h2 id="options-title" style="margin:0 0 8px; font-size:1.1rem;">
-        Choose Your Monthly Payment Amount
+        Monthly Payment Amount Options
       </h2>
 
       <div class="options">
@@ -49,17 +49,19 @@
         </label>
       </div>
 
-      <!-- Slider box -->
-      <h2 id="options-title" style="margin:0 0 8px; font-size:1.1rem;">
-        Use the Slider to Find Out Details of Your Payment ⬇️
-      </h2>
-      <div class="slider-box" id="sliderBox">
-        <p>
-          If you pay <strong>$<span id="descPayment">-</span></strong> each month and make no new charges,
-          you will pay off your current balance in <strong><span id="descYears">—</span></strong>,
-          for a total payment of <strong>$<span id="descTotal">—</span></strong>.
-        </p>
-        <input id="paymentRange" type="range" min="38" max="1875.11" step="0.01" value="38" />
+      <!-- Slider section with extra spacing -->
+      <div style="margin-top: 24px;">
+        <h2 style="margin:0 0 8px; font-size:1.1rem;">
+          Use the Slider to View Details of Your Payment
+        </h2>
+        <div class="slider-box-plain">
+          <p>
+            If you pay <strong>$<span id="descPayment">-</span></strong> each month and make no new charges,
+            you will pay off your current balance in <strong><span id="descYears">—</span></strong>,
+            for a total payment of <strong>$<span id="descTotal">—</span></strong>.
+          </p>
+          <input id="paymentRange" type="range" min="38" max="1875.11" step="0.01" value="38" />
+        </div>
       </div>
 
     </section>
@@ -85,12 +87,9 @@
 
       <!-- Graphs -->
       <div class="graph-section">
-        <h3 style="margin-bottom:8px; font-size:1rem;">Cumulative Total Payment Over Time</h3>
+        <h3 style="margin-bottom:8px; font-size:1rem;">Cumulative Amount Paid (Principal + Interest) by Month</h3>
         <div class="chart-wrap">
           <div class="chart-box">
-            <!-- <div style="flex:1; min-width:300px;">
-              <canvas id="balanceChart" height="200"></canvas>
-            </div> -->
               <canvas id="stackedChart"></canvas>
           </div>
         </div>
@@ -104,7 +103,7 @@
 <script>
   let isTyping = false;
   
-  // --- Constants (Oct 2025 update) ---
+  // --- Constants ---
   const STATEMENT_BALANCE = 1836.90;
   const CURRENT_BALANCE   = 1875.11;
   const MIN_PAYMENT       = 38.00;
@@ -115,7 +114,6 @@
   const paymentInput = document.getElementById('paymentInput');
   const yearsOut     = document.getElementById('yearsOut');
   const totalOut     = document.getElementById('totalOut');
-  const sliderBox    = document.getElementById('sliderBox');
   const descPayment  = document.getElementById('descPayment');
   const descYears    = document.getElementById('descYears');
   const descTotal    = document.getElementById('descTotal');
@@ -123,12 +121,12 @@
   function compute(payment){
     const balance = CURRENT_BALANCE;
     const monthlyPayment = Math.max(0, Number(payment) || 0);
-    if (monthlyPayment <= balance * MONTHLY_RATE) return { pay: monthlyPayment, years: Infinity, total: Infinity };
-    if (monthlyPayment >= balance) return { pay: monthlyPayment, years: 0, total: balance };
+    if (monthlyPayment <= balance * MONTHLY_RATE) return { pay: monthlyPayment, years: Infinity, total: Infinity, months: Infinity };
+    if (monthlyPayment >= balance) return { pay: monthlyPayment, years: 0, total: balance, months: 1 };
     const months = Math.log(monthlyPayment / (monthlyPayment - MONTHLY_RATE * balance)) / Math.log(1 + MONTHLY_RATE);
     const years = months / 12;
     const total = monthlyPayment * months;
-    return { pay: monthlyPayment, years, total };
+    return { pay: monthlyPayment, years, total, months };
   }
 
   function updateDisplay(pay, total) {
@@ -150,7 +148,7 @@
   function render(payment) {
     if (!payment || isNaN(payment) || payment <= 0) return;
 
-    const { pay, years, total } = compute(payment);
+    const { pay, years, total, months } = compute(payment);
     updateDisplay(pay, total);
 
     if (!isFinite(years)) {
@@ -159,24 +157,26 @@
       return;
     }
 
-    const totalMonths = Math.ceil(years * 12);
+    const totalMonths = Math.ceil(months);
     let timeText = "";
 
     if (totalMonths <= 0) {
       timeText = "0 months";
+    } else if (totalMonths === 1) {
+      timeText = "1 month";
     } else if (totalMonths < 12) {
-      timeText = totalMonths === 1 ? "1 month" : `${totalMonths} months`;
+      timeText = `${totalMonths} months`;
     } else {
       const wholeYears = Math.floor(totalMonths / 12);
       const remainingMonths = totalMonths % 12;
       if (remainingMonths === 0) {
         timeText = wholeYears === 1 ? "1 year" : `${wholeYears} years`;
       } else {
-        timeText = `${wholeYears} years and ${remainingMonths} months`;
+        timeText = `${wholeYears} ${wholeYears === 1 ? 'year' : 'years'} and ${remainingMonths} ${remainingMonths === 1 ? 'month' : 'months'}`;
       }
     }
 
-    yearsOut.textContent = totalMonths <= 12 ? timeText : `${timeText} (${totalMonths} months)`;
+    yearsOut.textContent = totalMonths <= 12 ? timeText : `${timeText}\n(${totalMonths} months)`;
     descYears.textContent = totalMonths <= 1 ? timeText : `about ${timeText}`;
 
     updateCharts(payment);
@@ -228,29 +228,27 @@
 
   window.addEventListener('DOMContentLoaded', () => {});
   
-  let balanceChart, stackedChart;
+  let stackedChart;
 
   function updateCharts(payment) {
-    const { pay, years } = compute(payment);
+    const { pay, years, months } = compute(payment);
     if (!isFinite(years)) return;
 
-    const months = Math.ceil(years * 12);
+    const totalMonths = Math.ceil(months);
     
     // Create labels showing all months
-    const labels = Array.from({ length: months }, (_, i) => {
+    const labels = Array.from({ length: totalMonths }, (_, i) => {
       const monthNum = i + 1;
       return `${monthNum}`;
     });
 
     let balance = CURRENT_BALANCE;
-    const cumulativeTotalPayments = [];
     const cumulativeInterest = [];
     const cumulativePrincipal = [];
-    let totalPaidSoFar = 0;
     let totalInterestSoFar = 0;
     let totalPrincipalSoFar = 0;
 
-    for (let m = 1; m <= months; m++) {
+    for (let m = 1; m <= totalMonths; m++) {
       const interest = balance * MONTHLY_RATE;
       const principal = Math.min(pay - interest, balance);
       balance -= principal;
@@ -258,11 +256,9 @@
       // Accumulate totals
       totalInterestSoFar += interest;
       totalPrincipalSoFar += principal;
-      totalPaidSoFar += (principal + interest);
       
       cumulativeInterest.push(totalInterestSoFar);
       cumulativePrincipal.push(totalPrincipalSoFar);
-      cumulativeTotalPayments.push(totalPaidSoFar);
     }
 
     const stkCtx = document.getElementById("stackedChart").getContext("2d");
@@ -274,8 +270,8 @@
       data: {
         labels,
         datasets: [
-          { label: "Cumulative Interest", data: cumulativeInterest, backgroundColor: "#EAAA00" },
-          { label: "Cumulative Principal", data: cumulativePrincipal, backgroundColor: "#8A100B" }
+          { label: "Cumulative Interest Paid", data: cumulativeInterest, backgroundColor: "#EAAA00" },
+          { label: "Cumulative Principal Paid", data: cumulativePrincipal, backgroundColor: "#8A100B" }
         ]
       },
       options: {
@@ -299,9 +295,11 @@
           },
           y: {
             stacked: true,
+            min: 0,
+            max: 4500,
             title: {
               display: true,
-              text: 'Total Payment ($)',
+              text: 'Total Amount Paid ($)',
               font: {
                 size: 13,
                 weight: '500'
